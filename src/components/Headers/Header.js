@@ -17,9 +17,48 @@
 */
 
 // reactstrap components
+import { useState, useEffect } from "react";
 import { Card, CardBody, CardTitle, Container, Row, Col } from "reactstrap";
+import axios from "axios";
 
 const Header = () => {
+  const [sensorValues, setSensorValues] = useState({
+    TMP36Value: 0,
+    MQ2Value: 0,
+    MQ7Value: 0,
+    MQ135Value: 0,
+    TCRT5000Value: 0,
+  });
+
+  useEffect(() => {
+    const fetchSensorValues = async () => {
+      try {
+        const responses = await Promise.all([
+          axios.get('https://ensc351-finalproject.onrender.com/alert/TMP36'),
+          axios.get('https://ensc351-finalproject.onrender.com/alert/MQ2'),
+          axios.get('https://ensc351-finalproject.onrender.com/alert/MQ7'),
+          axios.get('https://ensc351-finalproject.onrender.com/alert/MQ135'),
+          axios.get('https://ensc351-finalproject.onrender.com/alert/TCRT5000'),
+        ]);
+
+        const data = responses.map(response => response.data);
+        setSensorValues({
+          TMP36Value: data[0].TMP36Value,
+          MQ2Value: data[1].MQ2Value,
+          MQ7Value: data[2].MQ7Value,
+          MQ135Value: data[3].MQ135Value,
+          TCRT5000Value: data[4].TCRT5000Value,
+        });
+      } catch (error) {
+        console.error('Error fetching sensor values:', error);
+      }
+    };
+
+    const interval = setInterval(fetchSensorValues, 1000); // Fetch every second
+
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, []);
+
   return (
     <>
       <div className="header bg-gradient-info pb-8 pt-5 pt-md-8">
@@ -39,7 +78,7 @@ const Header = () => {
                           Temperature Sensor (TMP36)
                         </CardTitle>
                         <span className="h2 font-weight-bold mb-0">
-                          350,897
+                          {sensorValues.TMP36Value}
                         </span>
                       </div>
                       <Col className="col-auto">
@@ -68,7 +107,7 @@ const Header = () => {
                         >
                           Flammable Gas and Smoke Sensor (MQ-2)
                         </CardTitle>
-                        <span className="h2 font-weight-bold mb-0">2,356</span>
+                        <span className="h2 font-weight-bold mb-0">{sensorValues.MQ2Value}</span>
                       </div>
                       <Col className="col-auto">
                         <div className="icon icon-shape bg-warning text-white rounded-circle shadow">
@@ -96,7 +135,7 @@ const Header = () => {
                         >
                           Carbon Monoxide Gas Sensor (MQ-7)
                         </CardTitle>
-                        <span className="h2 font-weight-bold mb-0">924</span>
+                        <span className="h2 font-weight-bold mb-0">{sensorValues.MQ7Value}</span>
                       </div>
                       <Col className="col-auto">
                         <div className="icon icon-shape bg-yellow text-white rounded-circle shadow">
@@ -124,7 +163,7 @@ const Header = () => {
                         >
                           Air Quality Sensor (MQ-135)
                         </CardTitle>
-                        <span className="h2 font-weight-bold mb-0">49,65%</span>
+                        <span className="h2 font-weight-bold mb-0">{sensorValues.MQ135Value}</span>
                       </div>
                       <Col className="col-auto">
                         <div className="icon icon-shape bg-info text-white rounded-circle shadow">
